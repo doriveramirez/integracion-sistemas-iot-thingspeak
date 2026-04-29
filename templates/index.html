@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Panel IoT con ThingSpeak{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+  <section class="hero">
+    <p class="eyebrow">Integración de Sistemas IoT</p>
+    <h1>Panel de gestión para canales de ThingSpeak</h1>
+    <p class="lead">
+      La aplicación consulta un canal, muestra sus feeds y estados recientes, genera gráficas y permite
+      publicar nuevos valores cuando se dispone de la <span class="mono">Write API Key</span>.
+    </p>
+  </section>
+
+  <section class="grid-two">
+    <article class="panel">
+      <h2>Configuración del canal</h2>
+      <form method="get" class="channel-form">
+        <label>
+          Channel ID
+          <input name="channel_id" type="number" value="{{ form_state.channel_id }}" required>
+        </label>
+        <label>
+          Read API Key
+          <input name="read_api_key" type="text" value="{{ form_state.read_api_key }}" placeholder="Opcional para canales públicos">
+        </label>
+        <label>
+          Write API Key
+          <input name="write_api_key" type="text" value="{{ form_state.write_api_key }}" placeholder="Necesaria para enviar datos">
+        </label>
+        <label>
+          Registros
+          <input name="results" type="number" min="1" max="50" value="{{ form_state.results }}" required>
+        </label>
+        <button type="submit">Cargar canal</button>
+      </form>
+
+      <div class="url-box">
+        <h3>URLs generadas por la app</h3>
+        <p><strong>Read a channel feed:</strong><br><a href="{{ feed_url }}" target="_blank">{{ feed_url }}</a></p>
+        <p><strong>Read channel status updates:</strong><br><a href="{{ status_url }}" target="_blank">{{ status_url }}</a></p>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>Enviar nuevos datos</h2>
+      <form method="post" action="{{ url_for('send_data') }}" class="channel-form">
+        <input type="hidden" name="channel_id" value="{{ form_state.channel_id }}">
+        <input type="hidden" name="read_api_key" value="{{ form_state.read_api_key }}">
+        <input type="hidden" name="write_api_key" value="{{ form_state.write_api_key }}">
+        <input type="hidden" name="results" value="{{ form_state.results }}">
+        {% for index in range(1, 9) %}
+        <label>
+          Field {{ index }}
+          <input name="field{{ index }}" type="text" placeholder="Valor opcional">
+        </label>
+        {% endfor %}
+        <label>
+          Status
+          <textarea name="status" rows="3" placeholder="Comentario opcional para la actualización"></textarea>
+        </label>
+        <button type="submit">Enviar actualización</button>
+      </form>
+      <p class="note">
+        El proyecto queda configurado por defecto con el canal de la tarea. Por seguridad, la
+        <span class="mono">Write API Key</span> no se guarda en los ficheros y se introduce solo cuando
+        hace falta enviar nuevos datos.
+      </p>
+    </article>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <section class="message-stack">
+      {% for category, message in messages %}
+      <div class="message {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </section>
+    {% endif %}
+  {% endwith %}
+
+  {% if error_message %}
+  <section class="message-stack">
+    <div class="message error">{{ error_message }}</div>
+  </section>
+  {% endif %}
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span>Canal</span>
+      <strong>{{ channel.name or "Sin datos" }}</strong>
+      <small>ID {{ channel.id or form_state.channel_id }}</small>
+    </article>
+    <article class="stat-card">
+      <span>Última entrada</span>
+      <strong>{{ channel.last_entry_id or "No disponible" }}</strong>
+      <small>Feeds recuperados: {{ feed_rows|length }}</small>
+    </article>
+    <article class="stat-card">
+      <span>Ubicación</span>
+      <strong>{{ channel.latitude or "?" }}, {{ channel.longitude or "?" }}</strong>
+      <small>Elevación: {{ channel.elevation or "No indicada" }}</small>
+    </article>
+    <article class="stat-card">
+      <span>Estados</span>
+      <strong>{{ status_total }}</strong>
+      <small>Actualizaciones consultadas</small>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Metadatos del canal</h2>
+    <dl class="meta-grid">
+      <div><dt>Nombre</dt><dd>{{ channel.name or "No disponible" }}</dd></div>
+      <div><dt>Descripción</dt><dd>{{ channel.description or "No disponible" }}</dd></div>
+      <div><dt>Creado</dt><dd>{{ channel.created_at or "No disponible" }}</dd></div>
+      <div><dt>Actualizado</dt><dd>{{ channel.updated_at or "No disponible" }}</dd></div>
+      {% for field in field_labels %}
+      <div><dt>{{ field.key }}</dt><dd>{{ field.label }}</dd></div>
+      {% endfor %}
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Gráficas del canal</h2>
+    {% if charts %}
+    <div class="chart-grid">
+      {% for chart in charts %}
+      <article class="chart-card">
+        <h3>{{ chart.label }}</h3>
+        <div class="chart-stage">
+          <canvas id="{{ chart.field }}"></canvas>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="note">No hay series numéricas disponibles para representar.</p>
+    {% endif %}
+  </section>
+
+  <section class="grid-two">
+    <article class="panel">
+      <h2>Feeds recientes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Entry ID</th>
+              {% for field in field_labels %}
+              <th>{{ field.label }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in feed_rows %}
+            <tr>
+              <td>{{ row.created_at }}</td>
+              <td>{{ row.entry_id }}</td>
+              {% for field in field_labels %}
+              <td>{{ row[field.key] if row[field.key] is not none else "-" }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>Status updates</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Entry ID</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in status_rows %}
+            <tr>
+              <td>{{ row.created_at }}</td>
+              <td>{{ row.entry_id }}</td>
+              <td>{{ row.status if row.status else "-" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</main>
+
+{% if charts %}
+<script>
+  const chartConfigs = {{ charts|tojson }};
+  const palette = ["#0f766e", "#c2410c", "#1d4ed8", "#7c3aed", "#be123c", "#0f172a", "#16a34a", "#b45309"];
+  chartConfigs.forEach((chart, index) => {
+    const ctx = document.getElementById(chart.field);
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: chart.labels,
+        datasets: [{
+          label: chart.label,
+          data: chart.data,
+          borderColor: palette[index % palette.length],
+          backgroundColor: palette[index % palette.length] + "22",
+          borderWidth: 2,
+          tension: 0.25,
+          spanGaps: true,
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: "#35524a", maxRotation: 0, autoSkip: true } },
+          y: { ticks: { color: "#35524a" } }
+        },
+        plugins: {
+          legend: { labels: { color: "#14231f", font: { family: "Space Grotesk" } } }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

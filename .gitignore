@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+edge_profile_test/
+cookies_copy.db
+Entrega_IoT_ThingSpeak.zip
+assignment.pdf
+_input_zip/

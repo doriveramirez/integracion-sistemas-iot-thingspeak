@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Memoria - Integraci&oacute;n de Sistemas IoT</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 1.1cm;
+      }
+
+      :root {
+        --ink: #12211c;
+        --muted: #486158;
+        --accent: #0f766e;
+        --accent-2: #b45309;
+        --line: #d8e3da;
+        --panel: #f6f4ea;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        line-height: 1.34;
+        background: #fff;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 10px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      h2 {
+        margin-top: 18px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--line);
+        color: var(--accent);
+        font-size: 18px;
+      }
+
+      h3 {
+        font-size: 15px;
+        color: var(--accent-2);
+      }
+
+      p,
+      li,
+      td,
+      th {
+        font-size: 12px;
+      }
+
+      .cover {
+        padding: 14px 0 10px;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #e7f3f1;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .card {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+      }
+
+      .card strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--accent);
+      }
+
+      .index {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .mono {
+        font-family: Consolas, "Courier New", monospace;
+        word-break: break-word;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      th,
+      td {
+        padding: 7px 8px;
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #edf5ef;
+      }
+
+      .figure {
+        margin: 12px 0 16px;
+        page-break-inside: avoid;
+      }
+
+      .figure img {
+        display: block;
+        width: auto;
+        max-width: 88%;
+        max-height: 175mm;
+        margin: 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      .figure.wide img {
+        max-width: 100%;
+      }
+
+      .caption {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      pre {
+        margin: 8px 0 12px;
+        padding: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fbfaf4;
+        font-size: 10px;
+        line-height: 1.28;
+        white-space: pre-wrap;
+      }
+
+      ul,
+      ol {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="cover">
+      <span class="tag">Tarea resuelta</span>
+      <h1>Integraci&oacute;n de Sistemas IoT con ThingSpeak</h1>
+      <p class="subtitle">
+        Memoria t&eacute;cnica de la aplicaci&oacute;n desarrollada para crear, consultar, visualizar y gestionar datos
+        de un canal IoT mediante la API REST de ThingSpeak.
+      </p>
+
+      <div class="info-grid">
+        <div class="card">
+          <strong>Fecha de elaboraci&oacute;n</strong>
+          29 de abril de 2026
+        </div>
+        <div class="card">
+          <strong>Canal creado para la tarea</strong>
+          Estacion meteorologica David Orive
+        </div>
+        <div class="card">
+          <strong>Aplicaci&oacute;n entregada</strong>
+          Panel web en Python con Flask y cliente HTTP para la API de ThingSpeak
+        </div>
+        <div class="card">
+          <strong>Ficheros principales</strong>
+          <span class="mono">app.py</span>, <span class="mono">thingspeak_client.py</span>,
+          <span class="mono">templates/index.html</span> y <span class="mono">static/styles.css</span>
+        </div>
+      </div>
+
+      <h2>&Iacute;ndice</h2>
+      <ol class="index">
+        <li>Objetivo de la pr&aacute;ctica</li>
+        <li>Creaci&oacute;n del canal y configuraci&oacute;n</li>
+        <li>Lectura y escritura mediante API</li>
+        <li>Aplicaci&oacute;n desarrollada</li>
+        <li>Fragmentos principales del c&oacute;digo</li>
+        <li>Conclusiones</li>
+      </ol>
+    </section>
+
+    <h2>1. Objetivo de la pr&aacute;ctica</h2>
+    <p>
+      El objetivo de la pr&aacute;ctica es utilizar la plataforma ThingSpeak para gestionar los datos de un sistema
+      IoT. Para ello se ha creado un canal propio en la cuenta del alumno, se han definido ocho campos
+      relacionados con una estaci&oacute;n meteorol&oacute;gica y se ha desarrollado una aplicaci&oacute;n web en Python que
+      consume la API REST del servicio para leer feeds, consultar estados, representar gr&aacute;ficas y permitir el
+      env&iacute;o de nuevos datos al canal.
+    </p>
+    <p>
+      El flujo completo de la pr&aacute;ctica ha quedado cubierto: creaci&oacute;n real del canal, obtenci&oacute;n de las claves de
+      acceso, inserci&oacute;n de lecturas de prueba mediante API y comprobaci&oacute;n de la aplicaci&oacute;n local conectada al
+      canal creado espec&iacute;ficamente para esta tarea.
+    </p>
+
+    <h2>2. Creaci&oacute;n del canal y configuraci&oacute;n</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Elemento</th>
+          <th>Valor configurado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nombre del canal</td>
+          <td>Estacion meteorologica David Orive</td>
+        </tr>
+        <tr>
+          <td>Channel ID</td>
+          <td>3363654</td>
+        </tr>
+        <tr>
+          <td>Author</td>
+          <td>mwa0000041264990</td>
+        </tr>
+        <tr>
+          <td>Access</td>
+          <td>Private</td>
+        </tr>
+        <tr>
+          <td>Field 1</td>
+          <td>Temperatura</td>
+        </tr>
+        <tr>
+          <td>Field 2</td>
+          <td>Humedad</td>
+        </tr>
+        <tr>
+          <td>Field 3</td>
+          <td>Lluvia</td>
+        </tr>
+        <tr>
+          <td>Field 4</td>
+          <td>Calidad del aire</td>
+        </tr>
+        <tr>
+          <td>Field 5</td>
+          <td>Estado</td>
+        </tr>
+        <tr>
+          <td>Field 6</td>
+          <td>Nivel de luz</td>
+        </tr>
+        <tr>
+          <td>Field 7</td>
+          <td>GPS</td>
+        </tr>
+        <tr>
+          <td>Field 8</td>
+          <td>Presion</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="figure">
+      <img src="assets/api_keys_redacted.png" alt="Pesta&ntilde;a API Keys del canal creado en ThingSpeak">
+      <div class="caption">
+        Figura 1. Pesta&ntilde;a <span class="mono">API Keys</span> del canal creado en ThingSpeak. En la memoria
+        se han ocultado los valores sensibles de las claves para no exponer credenciales del canal.
+      </div>
+    </div>
+
+    <h2>3. Lectura y escritura mediante API</h2>
+    <p>
+      Una vez creado el canal, la gesti&oacute;n de los datos se ha realizado a trav&eacute;s de la API REST de ThingSpeak.
+      La escritura se prob&oacute; con la <span class="mono">Write API Key</span> real del canal, aunque por seguridad no
+      se incluye dicha clave en esta memoria. S&iacute; se muestran las rutas de lectura requeridas por el enunciado,
+      ya que son las que utiliza la aplicaci&oacute;n para consultar los datos del canal privado.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Operaci&oacute;n</th>
+          <th>Direcci&oacute;n utilizada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Read a channel feed</td>
+          <td class="mono">https://api.thingspeak.com/channels/3363654/feeds.json?api_key=[READ_API_KEY]&amp;results=15</td>
+        </tr>
+        <tr>
+          <td>Read a channel field</td>
+          <td class="mono">https://api.thingspeak.com/channels/3363654/fields/1.json?api_key=[READ_API_KEY]&amp;results=15</td>
+        </tr>
+        <tr>
+          <td>Read channel status updates</td>
+          <td class="mono">https://api.thingspeak.com/channels/3363654/status.json?api_key=[READ_API_KEY]</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Para verificar el funcionamiento de la escritura, se enviaron tres lecturas de ejemplo al canal. Los datos
+      recibidos por ThingSpeak fueron los siguientes:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Entry ID</th>
+          <th>Temperatura</th>
+          <th>Humedad</th>
+          <th>Lluvia</th>
+          <th>Calidad aire</th>
+          <th>Estado</th>
+          <th>Nivel luz</th>
+          <th>GPS</th>
+          <th>Presion</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>24.8</td>
+          <td>58.1</td>
+          <td>0</td>
+          <td>42</td>
+          <td>1</td>
+          <td>560</td>
+          <td>28.466,-16.255</td>
+          <td>1013</td>
+          <td>Lectura inicial desde aplicacion</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>24.4</td>
+          <td>59.0</td>
+          <td>1</td>
+          <td>47</td>
+          <td>1</td>
+          <td>590</td>
+          <td>28.466,-16.255</td>
+          <td>1011</td>
+          <td>Muestreo 3</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>25.1</td>
+          <td>57.4</td>
+          <td>0</td>
+          <td>40</td>
+          <td>1</td>
+          <td>540</td>
+          <td>28.466,-16.255</td>
+          <td>1012</td>
+          <td>Muestreo 2</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Aplicaci&oacute;n desarrollada</h2>
+    <p>
+      La soluci&oacute;n implementada consiste en una aplicaci&oacute;n web ligera en Python con Flask. La aplicaci&oacute;n permite:
+    </p>
+    <ul>
+      <li>Cargar un canal indicando <span class="mono">Channel ID</span>, <span class="mono">Read API Key</span> y n&uacute;mero de registros.</li>
+      <li>Construir autom&aacute;ticamente las direcciones de lectura del canal.</li>
+      <li>Consultar los feeds y los <em>status updates</em> recientes.</li>
+      <li>Representar una gr&aacute;fica por cada campo disponible.</li>
+      <li>Preparar el env&iacute;o de nuevos datos al canal cuando se facilita la <span class="mono">Write API Key</span>.</li>
+    </ul>
+
+    <div class="page-break"></div>
+    <div class="figure wide">
+      <img src="assets/app_section_overview.png" alt="Vista superior de la aplicaci&oacute;n local">
+      <div class="caption">
+        Figura 2. Vista superior de la aplicaci&oacute;n local conectada al canal privado. La captura p&uacute;blica
+        sustituye la <span class="mono">Read API Key</span> por un marcador para no exponer credenciales.
+      </div>
+    </div>
+
+    <div class="figure wide">
+      <img src="assets/app_section_metadata.png" alt="Metadatos del canal en la aplicaci&oacute;n">
+      <div class="caption">
+        Figura 3. Secci&oacute;n de metadatos del canal con nombre, descripci&oacute;n, fechas y etiquetas de los ocho campos
+        recuperados desde ThingSpeak.
+      </div>
+    </div>
+
+    <div class="figure wide">
+      <img src="assets/app_section_charts.png" alt="Gr&aacute;ficas del canal en la aplicaci&oacute;n">
+      <div class="caption">
+        Figura 4. Gr&aacute;ficas generadas por la aplicaci&oacute;n para los ocho campos del canal, construidas a partir
+        de los feeds almacenados en ThingSpeak.
+      </div>
+    </div>
+
+    <div class="figure wide">
+      <img src="assets/app_section_tables.png" alt="Tablas de feeds y estados en la aplicaci&oacute;n">
+      <div class="caption">
+        Figura 5. Tablas de feeds recientes y de <em>status updates</em>. La captura se ha preparado en una vista
+        ampliada para que aparezcan completos todos los campos del registro.
+      </div>
+    </div>
+
+    <p class="small">
+      Nota: la aplicaci&oacute;n no guarda la <span class="mono">Write API Key</span> en los ficheros del proyecto. Para
+      escribir nuevos datos puede introducirse manualmente en la interfaz o mediante una variable de entorno.
+    </p>
+
+    <h2>5. Fragmentos principales del c&oacute;digo</h2>
+    <h3>5.1 Cliente de acceso a ThingSpeak</h3>
+    <pre>class ThingSpeakClient:
+    def build_feed_url(self, config: ChannelConfig) -> str:
+        params = [f"results={config.results}"]
+        if config.read_api_key:
+            params.append(f"api_key={config.read_api_key}")
+        return f"{BASE_API_URL}/channels/{config.channel_id}/feeds.json?{'&amp;'.join(params)}"
+
+    def build_status_url(self, config: ChannelConfig) -> str:
+        params = [f"results={config.results}"]
+        if config.read_api_key:
+            params.append(f"api_key={config.read_api_key}")
+        return f"{BASE_API_URL}/channels/{config.channel_id}/status.json?{'&amp;'.join(params)}"
+
+    def write_update(self, config: ChannelConfig, payload: dict[str, str]) -> str:
+        update_url = self.build_update_url(config, payload)
+        response = requests.get(update_url, timeout=self.timeout)
+        response.raise_for_status()
+        return response.text.strip()</pre>
+
+    <h3>5.2 L&oacute;gica principal de la aplicaci&oacute;n</h3>
+    <pre>@APP.post("/send")
+def send_data() -> Any:
+    config = build_config_from_request()
+    payload = {}
+    for index in range(1, 9):
+        value = request.form.get(f"field{index}", "").strip()
+        if value:
+            payload[f"field{index}"] = value
+
+    status = request.form.get("status", "").strip()
+    if status:
+        payload["status"] = status
+
+    entry_id = CLIENT.write_update(config, payload)
+    flash(f"Actualizaci&oacute;n enviada correctamente. ThingSpeak devolvi&oacute; entry id {entry_id}.", "success")</pre>
+
+    <h3>5.3 Preparaci&oacute;n de series para las gr&aacute;ficas</h3>
+    <pre>def chart_payload(feeds: list[dict[str, Any]], labels: list[dict[str, str]]) -> list[dict[str, Any]]:
+    charts = []
+    timestamps = [feed["created_at"] for feed in feeds]
+    for label in labels:
+        series = []
+        for feed in feeds:
+            value = feed.get(label["key"])
+            try:
+                series.append(float(value) if value is not None else None)
+            except (TypeError, ValueError):
+                series.append(None)
+        charts.append({"field": label["key"], "label": label["label"], "labels": timestamps, "data": series})
+    return charts</pre>
+
+    <p>
+      Adem&aacute;s de estos fragmentos, se entregan en el proyecto los ficheros completos
+      <span class="mono">app.py</span>, <span class="mono">thingspeak_client.py</span>,
+      <span class="mono">templates/index.html</span>, <span class="mono">static/styles.css</span> y
+      las pruebas unitarias de <span class="mono">tests/test_thingspeak_client.py</span>.
+    </p>
+
+    <h2>6. Conclusiones</h2>
+    <p>
+      La pr&aacute;ctica ha quedado completada de forma &iacute;ntegra sobre un canal real de ThingSpeak. Se ha creado y
+      configurado el canal, se han definido sus campos, se han obtenido las direcciones de lectura, se han
+      insertado lecturas de prueba y se ha comprobado una aplicaci&oacute;n propia capaz de gestionar sus datos. De
+      esta forma se demuestra tanto el uso de la plataforma ThingSpeak como la integraci&oacute;n de una aplicaci&oacute;n
+      externa que automatiza la consulta y visualizaci&oacute;n de la informaci&oacute;n del sistema IoT.
+    </p>
+  </body>
+</html>
