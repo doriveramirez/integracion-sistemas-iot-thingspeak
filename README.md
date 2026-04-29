@@ -2,6 +2,12 @@
 
 Este proyecto implementa una aplicación web en Python para gestionar datos de canales de ThingSpeak.
 
+## Documento de entrega
+
+En la raíz del repositorio se incluye el entregable principal en PDF:
+
+- `ENTREGA_INTEGRACION_SISTEMAS_IOT_THINGSPEAK.pdf`
+
 ## Requisitos
 
 - Python 3.11 o superior
